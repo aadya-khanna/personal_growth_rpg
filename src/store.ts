@@ -1,4 +1,4 @@
-import type { AppState, Quest, Daily, Achievement, StatId } from './types';
+import type { AppState, Quest, Daily, Achievement, StatId, Stats } from './types';
 import {
   ACHIEVEMENT_DEFS,
   LEVEL_FORMULA,
@@ -14,7 +14,7 @@ const OLD_TO_NEW_STAT: Record<string, StatId> = {
 };
 
 function migrateStats(
-  parsed: Record<string, number> | undefined,
+  parsed: Stats | Record<string, number> | undefined,
   defaults: AppState['stats']
 ): AppState['stats'] {
   const result = { ...defaults };

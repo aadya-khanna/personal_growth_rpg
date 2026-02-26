@@ -6,7 +6,6 @@ export const HAIR_COLORS = ['dark-brown', 'light-brown', 'red', 'blonde', 'black
 
 const GANDALF_SHEET_WIDTH = 800;
 const GANDALF_SHEET_HEIGHT = 448;
-const GANDALF_FRAME_W = 80;
 
 function getSkinFilename(gender: Gender, skinTone: SkinTone): string {
   const g = gender === 'nonbinary' ? 'male' : gender;
