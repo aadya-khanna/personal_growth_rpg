@@ -1,0 +1,172 @@
+import { useState, useRef, useEffect } from 'react';
+import type { AppState } from './types';
+import { xpToNextLevel } from './store';
+import { getClassTitle } from './utils';
+
+interface TopbarProps {
+  state: AppState;
+  onNameChange: (name: string) => void;
+  onExport: () => void;
+  onImport: (json: string) => void;
+  onResetProgress: () => void;
+  onTestGroq: () => Promise<string>;
+  onClearQuests: () => void;
+  onToggleSettings: () => void;
+  onShowLeaderboard: () => void;
+   onLogout: () => void;
+}
+
+export function Topbar({
+  state,
+  onNameChange,
+  onExport,
+  onImport,
+  onResetProgress,
+  onTestGroq,
+  onClearQuests,
+  onToggleSettings,
+  onShowLeaderboard,
+  onLogout,
+}: TopbarProps) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(state.characterName);
+  const [showSettings, setShowSettings] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { level, currentInLevel, needed } = xpToNextLevel(state.totalXp);
+  const classTitle = getClassTitle(state.stats);
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  useEffect(() => {
+    if (editingName) inputRef.current?.focus();
+  }, [editingName]);
+
+  useEffect(() => {
+    if (!showSettings) return;
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setShowSettings(false);
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showSettings]);
+
+  const handleNameSubmit = () => {
+    const v = nameInput.trim() || 'Hero';
+    onNameChange(v);
+    setNameInput(v);
+    setEditingName(false);
+  };
+
+  return (
+    <header className="topbar">
+      <div className="topbar-left">
+        {editingName ? (
+          <input
+            ref={inputRef}
+            className="topbar-name"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onBlur={handleNameSubmit}
+            onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+          />
+        ) : (
+          <span
+            className="topbar-name"
+            onClick={() => setEditingName(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setEditingName(true)}
+          >
+            {state.characterName}
+          </span>
+        )}
+        <span className="topbar-sep">·</span>
+        <span className="topbar-class" title={classTitle}>{classTitle}</span>
+        <span className="topbar-sep">·</span>
+        <span className="topbar-xp-label">LVL {level}</span>
+      </div>
+
+      <div className="topbar-xp-wrap">
+        <div className="topbar-xp-bar">
+          <div
+            className="topbar-xp-fill"
+            style={{ width: `${(currentInLevel / needed) * 100}%` }}
+          />
+        </div>
+        <span className="topbar-xp-text">
+          LVL {level} ── LVL {level + 1}  ·  {currentInLevel.toLocaleString()} / {needed.toLocaleString()} XP
+        </span>
+      </div>
+
+      <div className="topbar-right">
+        <span className="topbar-streak">🔥 {state.streak.count}</span>
+        <span className="topbar-date">{today}</span>
+        <button
+          type="button"
+          className="topbar-leaderboard"
+          onClick={onShowLeaderboard}
+          aria-label="Leaderboard"
+        >
+          🏆
+        </button>
+        <div style={{ position: 'relative' }} ref={dropdownRef}>
+          <button
+            type="button"
+            className="topbar-settings"
+            onClick={() => { setShowSettings(!showSettings); onToggleSettings(); }}
+            aria-label="Settings"
+          >
+            ⚙
+          </button>
+          {showSettings && (
+            <div className="settings-dropdown">
+              <button type="button" onClick={() => { onExport(); setShowSettings(false); }}>
+                Export JSON
+              </button>
+              <label>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      const r = new FileReader();
+                      r.onload = () => { onImport(String(r.result)); setShowSettings(false); };
+                      r.readAsText(f);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+                Import JSON
+              </label>
+              <button
+                type="button"
+                onClick={() => { if (window.confirm('Reset all progress (XP, quests, dailies, stats)?')) { onResetProgress(); setShowSettings(false); } }}
+                style={{ color: 'var(--hp)' }}
+              >
+                Reset progress
+              </button>
+              <button type="button" onClick={async () => { const msg = await onTestGroq(); alert(msg); setShowSettings(false); }}>
+                Test Groq
+              </button>
+              <button
+                type="button"
+                onClick={() => { if (window.confirm('Remove all active and completed quests?')) { onClearQuests(); setShowSettings(false); } }}
+                style={{ color: 'var(--muted)' }}
+              >
+                Clear quests
+              </button>
+              <button
+                type="button"
+                onClick={() => { onLogout(); setShowSettings(false); }}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

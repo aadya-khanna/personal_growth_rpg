@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* RPG theme tokens for Tailwind (use with arbitrary values or extend in @theme) */
+@theme {
+  --color-rpg-bg: #f7f5f0;
+  --color-rpg-surface: #ffffff;
+  --color-rpg-border: #e2ddd6;
+  --color-rpg-text: #1a1a2e;
+  --color-rpg-muted: #9a9080;
+  --color-rpg-xp: #f0a500;
+  --font-heading: 'Cinzel', serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
