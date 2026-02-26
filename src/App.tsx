@@ -863,7 +863,7 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
               </div>
               <div className="text-center pt-3 w-full">
                 <div className="font-heading font-semibold text-xl text-gray-900">{characterName || 'Your Name'}</div>
-                <div className="text-base text-gray-500 mt-1">{classTitle || 'Wandering Adventurer'}</div>
+                <div className="font-mono text-base text-gray-500 mt-1">{classTitle || 'Wandering Adventurer'}</div>
               </div>
             </div>
           </div>
@@ -872,18 +872,18 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
           <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0">
           {/* Look — Male / Female pill toggle */}
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-600">Look</span>
+            <span className="text-sm font-heading font-medium text-gray-600">Look</span>
             <div className="inline-flex w-fit rounded-full p-2 gap-2 bg-gray-100 border border-gray-200 mt-0.5">
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition ${gender === 'male' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'male' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
                 onClick={() => setGender('male')}
               >
                 Male
               </button>
               <button
                 type="button"
-                className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition ${gender === 'female' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'female' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
                 onClick={() => setGender('female')}
               >
                 Female
@@ -893,17 +893,17 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
 
           {/* Name — text input + Random (Groq) on same row */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-gray-600">Name</span>
+            <span className="text-sm font-heading font-medium text-gray-600">Name</span>
             <div className="flex gap-2 items-center mt-0.5">
               <input
                 type="text"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 text-base text-gray-900"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
               />
               <button
                 type="button"
-                className="shrink-0 py-2 px-3 text-sm border border-gray-200 rounded-full hover:bg-gray-100 transition disabled:opacity-70"
+                className="shrink-0 py-2 px-3 text-sm font-mono border border-gray-200 rounded-full hover:bg-gray-100 transition disabled:opacity-70"
                 onClick={handleRandomName}
                 disabled={aiLoading}
               >
@@ -915,11 +915,11 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
 
           {/* Class Title — dropdown only */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-gray-600">Class Title</span>
+            <span className="text-sm font-heading font-medium text-gray-600">Class Title</span>
             <select
               value={classTitle}
               onChange={(e) => setClassTitle(e.target.value)}
-              className="mt-0.5 w-full px-3 py-2 rounded-lg border border-gray-200 text-base text-gray-900"
+              className="mt-0.5 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
             >
               {CLASS_TITLE_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
@@ -935,7 +935,7 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
           {/* Skin + Hair — two swatch pickers side by side */}
           <div className="flex gap-6">
             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-600">Skin</span>
+              <span className="text-sm font-heading font-medium text-gray-600">Skin</span>
               <div className="inline-flex w-fit rounded-full p-0.5 gap-0.5 bg-gray-100 border border-gray-200 mt-0.5">
                 {(['tone1', 'tone2', 'tone3', 'tone4', 'tone5'] as SkinTone[]).map((tone, idx) => (
                   <button
@@ -951,7 +951,7 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
               </div>
             </div>
             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-600">Hair</span>
+              <span className="text-sm font-heading font-medium text-gray-600">Hair</span>
               <div className="inline-flex w-fit rounded-full p-0.5 gap-0.5 bg-gray-100 border border-gray-200 mt-0.5">
                 {HAIR_COLORS.map((c, idx) => (
                   <button
@@ -970,11 +970,11 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
 
           {/* Clothing — dropdown full width of right column */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-gray-600">Clothing</span>
+            <span className="text-sm font-heading font-medium text-gray-600">Clothing</span>
             <select
               value={clothing}
               onChange={(e) => setClothing(e.target.value)}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base text-gray-900"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
             >
               {CLOTHING_OPTIONS.map((c) => {
                 const label =
