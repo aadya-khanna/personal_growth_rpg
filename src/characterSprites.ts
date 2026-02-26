@@ -48,18 +48,41 @@ function getClothingFilename(gender: Gender, clothing: string): string {
   return `${ASSETS_BASE}/${g === 'male' ? 'Male Clothing' : 'Female Clothing'}/${file}`;
 }
 
-function getWeaponFilename(gender: Gender): string {
+function getWeaponFilename(gender: Gender, weapon: string): string {
   const g = gender === 'nonbinary' ? 'male' : gender;
-  return `${ASSETS_BASE}/${g === 'male' ? 'Male Hand' : 'Female Hand'}/${g === 'male' ? 'Male' : 'Female'} Sword.png`;
+  const genderPrefix = g === 'male' ? 'Male' : 'Female';
+  const weaponMap: Record<string, string> = {
+    sword: 'Sword.png',
+    stick: 'Stick.png',
+    hoe: 'Hoe.png',
+    basket: 'Basket.png',
+    flower: 'Flower.png',
+  };
+  const weaponFile = weaponMap[weapon.toLowerCase()] ?? 'Sword.png';
+  return `${ASSETS_BASE}/${genderPrefix} Hand/${genderPrefix} ${weaponFile}`;
+}
+
+/** Map class titles to weapon types. */
+export function getWeaponForClass(classTitle: string): string {
+  const classWeaponMap: Record<string, string> = {
+    'Knight': 'sword',
+    'Archer': 'stick',
+    'Monk': 'flower',
+    'Farmer': 'hoe',
+    'Healer': 'basket',
+  };
+  return classWeaponMap[classTitle] ?? 'sword';
 }
 
 /** Build ordered sprite layer URLs for the given character config (Gandalf-hardcore assets). */
 export function buildSpriteLayers(config: CharacterConfig): string[] {
+  // Always derive weapon from class title to ensure consistency
+  const weapon = getWeaponForClass(config.classTitle);
   return [
     getSkinFilename(config.gender, config.skinTone),
     getHairFilename(config.gender, config.hairColor),
     getClothingFilename(config.gender, config.clothing),
-    getWeaponFilename(config.gender),
+    getWeaponFilename(config.gender, weapon),
   ];
 }
 

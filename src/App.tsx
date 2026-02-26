@@ -32,7 +32,7 @@ import { Topbar } from './Topbar';
 import { CharacterPanel } from './CharacterPanel';
 import { QuestLog } from './QuestLog';
 import { StatsPanel } from './StatsPanel';
-import { buildSpriteLayers, getIdleFrameStyle, HAIR_COLORS } from './characterSprites';
+import { buildSpriteLayers, getIdleFrameStyle, HAIR_COLORS, getWeaponForClass } from './characterSprites';
 
 function todayStr(): string {
   return new Date().toDateString();
@@ -781,7 +781,7 @@ const CLOTHING_OPTIONS = ['basic', 'blue', 'green', 'purple', 'orange'];
 
 const CLASS_TITLE_OPTIONS = [
   'Knight',
-  'Mage',
+  'Farmer',
   'Archer',
   'Healer',
   'Monk',
@@ -806,7 +806,7 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
     hairStyle: hairColor,
     hairColor,
     clothing,
-    weapon: 'sword',
+    weapon: getWeaponForClass(classTitle),
   });
 
   const handleRandomName = async () => {
@@ -832,7 +832,7 @@ function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationPro
       hairStyle: hairColor,
       hairColor,
       clothing,
-      weapon: 'sword',
+      weapon: getWeaponForClass(classTitle),
     };
     onComplete(cfg);
   };
@@ -1131,15 +1131,16 @@ function LeaderboardPage({ currentUserId, onClose }: LeaderboardPageProps) {
   };
 
   const buildConfigForRow = (row: LeaderboardProfile): CharacterConfig => {
+    const classTitle = row.class_title ?? 'Adventurer';
     return {
       gender: row.gender ?? 'male',
       characterName: row.character_name ?? row.username ?? 'Hero',
-      classTitle: row.class_title ?? 'Adventurer',
+      classTitle: classTitle,
       skinTone: row.skin_tone ?? 'tone3',
       hairStyle: row.hair_style ?? 'dark-brown',
       hairColor: row.hair_color ?? 'dark-brown',
       clothing: row.clothing ?? 'basic',
-      weapon: row.weapon ?? 'sword',
+      weapon: getWeaponForClass(classTitle),
     };
   };
 
