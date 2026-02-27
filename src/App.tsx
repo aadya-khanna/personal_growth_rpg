@@ -174,6 +174,31 @@ export default function App() {
     saveState(state);
   }, [state]);
 
+  // Sync progress to Supabase when state changes
+  useEffect(() => {
+    if (!authUser || !state.characterConfig) return;
+    
+    const syncToSupabase = async () => {
+      try {
+        await supabase.from('profiles').update({
+          level: state.level,
+          xp: state.totalXp,
+          hp: state.hp,
+          mp: state.mp,
+          str: state.stats.STRENGTH,
+          int: state.stats.INTELLECT,
+          agi: state.stats.AGILITY,
+          wis: state.stats.WISDOM,
+          streak: state.streak.count,
+        }).eq('id', authUser.id);
+      } catch (e) {
+        console.warn('Failed to sync profile to Supabase', e);
+      }
+    };
+    
+    syncToSupabase();
+  }, [state.totalXp, state.level, state.hp, state.mp, state.stats, state.streak, authUser, state.characterConfig]);
+
   useEffect(() => {
     const today = todayStr();
     if (lastDayRef.current !== today) {
