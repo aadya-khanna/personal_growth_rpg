@@ -2,12 +2,30 @@
 
 /* RPG theme tokens for Tailwind (use with arbitrary values or extend in @theme) */
 @theme {
+  /* Light mode colors */
   --color-rpg-bg: #f7f5f0;
   --color-rpg-surface: #ffffff;
   --color-rpg-border: #e2ddd6;
   --color-rpg-text: #1a1a2e;
   --color-rpg-muted: #9a9080;
   --color-rpg-xp: #f0a500;
+  
+  /* Dark mode colors */
+  --color-rpg-bg-dark: #1a1a1e;
+  --color-rpg-surface-dark: #252529;
+  --color-rpg-border-dark: #3a3a3e;
+  --color-rpg-text-dark: #e8e6e3;
+  --color-rpg-muted-dark: #9a9080;
+  
+  /* Shared accent colors (same in both modes) */
+  --color-hp: #e05c5c;
+  --color-mp: #4a8ff0;
+  --color-xp: #f0a500;
+  --color-str: #e07840;
+  --color-int: #7c60d8;
+  --color-agi: #3dc98a;
+  --color-wis: #c9a96e;
+  
   --font-heading: 'Cinzel', serif;
   --font-mono: 'DM Mono', monospace;
 }

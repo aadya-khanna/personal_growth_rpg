@@ -25,8 +25,8 @@ import {
   POWER_FOCUS_MULTIPLIER,
   RECOVERY_TASKS_NEEDED,
 } from './types';
-import { loadState, saveState, exportState, importState, xpToNextLevel, resetProgress } from './store';
-import { testGroqConnection, generateCharacterName } from './api';
+import { loadState, saveState, xpToNextLevel } from './store';
+import { generateCharacterName } from './api';
 import { supabase } from './supabaseClient';
 import { Topbar } from './Topbar';
 import { CharacterPanel } from './CharacterPanel';
@@ -113,9 +113,25 @@ export default function App() {
   const [state, setState] = useState<AppState>(loadState);
   const [levelUpVisible, setLevelUpVisible] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [showCustomization, setShowCustomization] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark';
+  });
   const xpAtStartOfDayRef = useRef(state.totalXp);
   const lastDayRef = useRef(todayStr());
   const prevLevelRef = useRef(xpToNextLevel(state.totalXp).level);
+  
+  // Apply dark mode class to document element
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -453,31 +469,6 @@ export default function App() {
     setState((s) => ({ ...s, characterName: name }));
   }, []);
 
-  const handleExport = useCallback(() => {
-    const blob = new Blob([exportState(state)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `personal-growth-rpg-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [state]);
-
-  const handleImport = useCallback((json: string) => {
-    try {
-      const patch = importState(json);
-      setState((s) => ({ ...s, ...patch }));
-    } catch {
-      console.warn('Import failed');
-    }
-  }, []);
-
-  const handleResetProgress = useCallback(() => {
-    setState(resetProgress());
-  }, []);
-
-  const handleTestGroq = useCallback(() => testGroqConnection(), []);
-
   const handleClearQuests = useCallback(() => {
     setState((s) => ({ ...s, quests: [], completedQuests: [] }));
   }, []);
@@ -503,17 +494,18 @@ export default function App() {
       <Topbar
         state={state}
         onNameChange={onNameChange}
-        onExport={handleExport}
-        onImport={handleImport}
-        onResetProgress={handleResetProgress}
-        onTestGroq={handleTestGroq}
         onClearQuests={handleClearQuests}
         onToggleSettings={() => setState((s) => ({ ...s, settingsOpen: !s.settingsOpen }))}
         onShowLeaderboard={() => setLeaderboardOpen(true)}
         onLogout={handleLogout}
+        isDarkMode={isDarkMode}
+        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
       <main className="main">
-        <CharacterPanel state={state} />
+        <CharacterPanel 
+          state={state} 
+          onCustomize={() => setShowCustomization(true)}
+        />
         <QuestLog
           state={state}
           onAddQuest={addQuest}
@@ -529,6 +521,46 @@ export default function App() {
           currentUserId={authUser?.id ?? null}
           onClose={() => setLeaderboardOpen(false)}
         />
+      )}
+      
+      {showCustomization && state.characterConfig && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto">
+            <CharacterCreation
+              loading={false}
+              onBack={() => setShowCustomization(false)}
+              onComplete={(config) => {
+                setState((s) => ({ 
+                  ...s, 
+                  characterConfig: config,
+                  characterName: config.characterName 
+                }));
+                setShowCustomization(false);
+                
+                // Update Supabase profile if user is logged in
+                if (authUser) {
+                  (async () => {
+                    try {
+                      await supabase.from('profiles').update({
+                        character_name: config.characterName,
+                        class_title: config.classTitle,
+                        gender: config.gender,
+                        skin_tone: config.skinTone,
+                        hair_style: config.hairStyle,
+                        hair_color: config.hairColor,
+                        clothing: config.clothing,
+                        weapon: config.weapon,
+                      }).eq('id', authUser.id);
+                    } catch (e) {
+                      console.warn('Failed to update profile in Supabase', e);
+                    }
+                  })();
+                }
+              }}
+              initialConfig={state.characterConfig}
+            />
+          </div>
+        </div>
       )}
       {levelUpVisible && (
         <div className="level-up-overlay" aria-live="polite">
@@ -775,6 +807,7 @@ interface CharacterCreationProps {
   loading: boolean;
   onBack: () => void;
   onComplete: (config: CharacterConfig) => void;
+  initialConfig?: CharacterConfig | null;
 }
 
 const CLOTHING_OPTIONS = ['basic', 'blue', 'green', 'purple', 'orange'];
@@ -787,13 +820,13 @@ const CLASS_TITLE_OPTIONS = [
   'Monk',
 ];
 
-function CharacterCreation({ loading, onBack, onComplete }: CharacterCreationProps) {
-  const [gender, setGender] = useState<Gender>('male');
-  const [skinTone, setSkinTone] = useState<SkinTone>('tone3');
-  const [characterName, setCharacterName] = useState('');
-  const [classTitle, setClassTitle] = useState('Knight');
-  const [hairColor, setHairColor] = useState<string>(HAIR_COLORS[1]);
-  const [clothing, setClothing] = useState<string>(CLOTHING_OPTIONS[0]);
+function CharacterCreation({ loading, onBack, onComplete, initialConfig }: CharacterCreationProps) {
+  const [gender, setGender] = useState<Gender>(initialConfig?.gender ?? 'male');
+  const [skinTone, setSkinTone] = useState<SkinTone>(initialConfig?.skinTone ?? 'tone3');
+  const [characterName, setCharacterName] = useState(initialConfig?.characterName ?? '');
+  const [classTitle, setClassTitle] = useState(initialConfig?.classTitle ?? 'Knight');
+  const [hairColor, setHairColor] = useState<string>(initialConfig?.hairColor ?? HAIR_COLORS[1]);
+  const [clothing, setClothing] = useState<string>(initialConfig?.clothing ?? CLOTHING_OPTIONS[0]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);

@@ -16,6 +16,15 @@
   --wis: #c9a96e;
 }
 
+.dark {
+  --bg: #1a1a1e;
+  --surface: #252529;
+  --border: #3a3a3e;
+  --text: #e8e6e3;
+  --muted: #9a9080;
+  /* Keep accent colors the same */
+}
+
 * {
   margin: 0;
   box-sizing: border-box;

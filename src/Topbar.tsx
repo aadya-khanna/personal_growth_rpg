@@ -6,27 +6,23 @@ import { getClassTitle } from './utils';
 interface TopbarProps {
   state: AppState;
   onNameChange: (name: string) => void;
-  onExport: () => void;
-  onImport: (json: string) => void;
-  onResetProgress: () => void;
-  onTestGroq: () => Promise<string>;
   onClearQuests: () => void;
   onToggleSettings: () => void;
   onShowLeaderboard: () => void;
-   onLogout: () => void;
+  onLogout: () => void;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 export function Topbar({
   state,
   onNameChange,
-  onExport,
-  onImport,
-  onResetProgress,
-  onTestGroq,
   onClearQuests,
   onToggleSettings,
   onShowLeaderboard,
   onLogout,
+  isDarkMode,
+  onToggleTheme,
 }: TopbarProps) {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(state.characterName);
@@ -104,11 +100,10 @@ export function Topbar({
         <span className="topbar-date">{today}</span>
         <button
           type="button"
-          className="topbar-leaderboard"
+          className="flex items-center gap-1 px-3 py-1.5 bg-[#f0a500] text-white rounded-md font-mono text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           onClick={onShowLeaderboard}
-          aria-label="Leaderboard"
         >
-          🏆
+          🏆 Leaderboard
         </button>
         <div style={{ position: 'relative' }} ref={dropdownRef}>
           <button
@@ -121,34 +116,11 @@ export function Topbar({
           </button>
           {showSettings && (
             <div className="settings-dropdown">
-              <button type="button" onClick={() => { onExport(); setShowSettings(false); }}>
-                Export JSON
-              </button>
-              <label>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      const r = new FileReader();
-                      r.onload = () => { onImport(String(r.result)); setShowSettings(false); };
-                      r.readAsText(f);
-                    }
-                    e.target.value = '';
-                  }}
-                />
-                Import JSON
-              </label>
               <button
                 type="button"
-                onClick={() => { if (window.confirm('Reset all progress (XP, quests, dailies, stats)?')) { onResetProgress(); setShowSettings(false); } }}
-                style={{ color: 'var(--hp)' }}
+                onClick={() => { onToggleTheme(); setShowSettings(false); }}
               >
-                Reset progress
-              </button>
-              <button type="button" onClick={async () => { const msg = await onTestGroq(); alert(msg); setShowSettings(false); }}>
-                Test Groq
+                {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
               </button>
               <button
                 type="button"

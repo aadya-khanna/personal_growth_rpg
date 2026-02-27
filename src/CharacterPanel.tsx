@@ -5,6 +5,7 @@ import { buildSpriteLayers, getIdleFrameStyle } from './characterSprites';
 
 interface CharacterPanelProps {
   state: AppState;
+  onCustomize: () => void;
 }
 
 const EQUIPMENT_NAMES = [
@@ -14,7 +15,7 @@ const EQUIPMENT_NAMES = [
   ['Pendant', 'Amulet', 'Focus Crystal', 'Arcane Orb'],
 ];
 
-export function CharacterPanel({ state }: CharacterPanelProps) {
+export function CharacterPanel({ state, onCustomize }: CharacterPanelProps) {
   const tier = getEquipmentTier(state.level);
   const topStat = (['STRENGTH', 'INTELLECT', 'AGILITY', 'WISDOM'] as StatId[]).reduce((a, b) =>
     state.stats[b] > state.stats[a] ? b : a
@@ -74,6 +75,13 @@ export function CharacterPanel({ state }: CharacterPanelProps) {
         ))}
       </div>
       <p className="class-flavor">{flavor}</p>
+      <button
+        type="button"
+        className="w-full mt-4 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg font-mono text-sm transition-colors duration-200 flex items-center text-center justify-center gap-2"
+        onClick={onCustomize}
+      >
+        ✎ Customize Character
+      </button>
     </div>
   );
 }
