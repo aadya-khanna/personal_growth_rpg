@@ -4,10 +4,11 @@ import { DIFFICULTY_XP, SUBTASK_XP } from './types';
 interface QuestCardProps {
   quest: Quest;
   onSubtaskToggle: (questId: string, subTaskId: string) => void;
+  onCompleteQuest?: (questId: string) => void;
   powerFocusMultiplier: number;
 }
 
-export function QuestCard({ quest, onSubtaskToggle, powerFocusMultiplier }: QuestCardProps) {
+export function QuestCard({ quest, onSubtaskToggle, onCompleteQuest, powerFocusMultiplier }: QuestCardProps) {
   const doneCount = quest.subTasks.filter((s) => s.done).length;
   const total = quest.subTasks.length;
   const progress = total > 0 ? (doneCount / total) * 100 : 0;
@@ -16,6 +17,7 @@ export function QuestCard({ quest, onSubtaskToggle, powerFocusMultiplier }: Ques
   const subXp = doneCount * SUBTASK_XP;
   const totalXp = baseXp + subXp;
   const displayXp = Math.round(totalXp * powerFocusMultiplier);
+  const hasNoSubtasks = total === 0;
 
   return (
     <div className={`quest-card ${isComplete ? 'completed' : ''}`}>
@@ -51,6 +53,15 @@ export function QuestCard({ quest, onSubtaskToggle, powerFocusMultiplier }: Ques
             style={{ width: `${progress}%` }}
           />
         </div>
+      )}
+      {hasNoSubtasks && onCompleteQuest && (
+        <button
+          type="button"
+          className="w-full mt-3 px-4 py-2 bg-[#3dc98a] hover:bg-[#35b57a] text-white rounded-lg font-mono text-sm transition-colors duration-200 flex items-center justify-center gap-2"
+          onClick={() => onCompleteQuest(quest.id)}
+        >
+          ✓ Complete Quest
+        </button>
       )}
     </div>
   );

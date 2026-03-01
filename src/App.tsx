@@ -433,6 +433,57 @@ export default function App() {
     });
   }, []);
 
+  const onCompleteQuest = useCallback((questId: string) => {
+    setState((s) => {
+      let next = rollDailiesForNewDay(s);
+      const quest = next.quests.find((q) => q.id === questId);
+      if (!quest) return next;
+      
+      const mult = next.powerFocusActive ? POWER_FOCUS_MULTIPLIER : 1;
+      next = next.powerFocusActive ? { ...next, powerFocusActive: false } : next;
+
+      const completedQuest = { ...quest, completedAt: Date.now() };
+      const completedQuests = [...next.completedQuests, completedQuest];
+      const quests = next.quests.filter((q) => q.id !== questId);
+      
+      let totalXp = next.totalXp + Math.round(quest.xpReward * mult);
+      const stats = {
+        ...next.stats,
+        [quest.skill]: Math.min(100, next.stats[quest.skill] + Math.round(quest.statReward * mult)),
+      };
+      
+      next = updateStreakOnComplete(next);
+      
+      // Handle fainted recovery
+      if (next.fainted) {
+        const recovery = next.recoveryTasksDone + 1;
+        if (recovery >= RECOVERY_TASKS_NEEDED) {
+          next = {
+            ...next,
+            fainted: false,
+            recoveryTasksDone: 0,
+            hp: Math.min(next.hpMax, Math.floor(next.hpMax / 2) + 20),
+          };
+        } else {
+          next = { ...next, recoveryTasksDone: recovery };
+        }
+      }
+      
+      // Achievements
+      let achievements = next.achievements;
+      if (completedQuests.length === 1) achievements = applyAchievement(achievements, 'first_quest', Date.now());
+      const { level } = xpToNextLevel(totalXp);
+      if (level >= 5) achievements = applyAchievement(achievements, 'level_5', Date.now());
+      const xpToday = totalXp - xpAtStartOfDayRef.current;
+      if (xpToday >= 100) achievements = applyAchievement(achievements, 'xp_100_day', Date.now());
+      if (stats.STRENGTH >= 50 && stats.INTELLECT >= 50 && stats.AGILITY >= 50 && stats.WISDOM >= 50) {
+        achievements = applyAchievement(achievements, 'all_stats_50', Date.now());
+      }
+
+      return { ...next, totalXp, level, stats, quests, completedQuests, achievements };
+    });
+  }, []);
+
   const addDaily = useCallback((opts: { title: string; plainDescription: string; skill: StatId }) => {
     const today = todayStr();
     const daily: Daily = {
@@ -535,6 +586,7 @@ export default function App() {
           state={state}
           onAddQuest={addQuest}
           onSubtaskToggle={onSubtaskToggle}
+          onCompleteQuest={onCompleteQuest}
           onAddDaily={addDaily}
           onDailyToggle={onDailyToggle}
           powerFocusMultiplier={powerFocusMultiplier}

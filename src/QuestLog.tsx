@@ -14,6 +14,7 @@ interface QuestLogProps {
     subTaskLabels: string[];
   }) => void;
   onSubtaskToggle: (questId: string, subTaskId: string) => void;
+  onCompleteQuest: (questId: string) => void;
   onAddDaily: (opts: { title: string; plainDescription: string; skill: import('./types').StatId }) => void;
   onDailyToggle: (dailyId: string) => void;
   powerFocusMultiplier: number;
@@ -23,6 +24,7 @@ export function QuestLog({
   state,
   onAddQuest,
   onSubtaskToggle,
+  onCompleteQuest,
   onAddDaily,
   onDailyToggle,
   powerFocusMultiplier,
@@ -43,6 +45,7 @@ export function QuestLog({
             key={q.id}
             quest={q}
             onSubtaskToggle={onSubtaskToggle}
+            onCompleteQuest={onCompleteQuest}
             powerFocusMultiplier={powerFocusMultiplier}
           />
         ))}
