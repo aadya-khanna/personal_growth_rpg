@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import type { AppState } from './types';
 import { xpToNextLevel } from './store';
-import { getClassTitle } from './utils';
+import { ClassIcon } from './ClassIcon';
 
 interface TopbarProps {
   state: AppState;
-  onNameChange: (name: string) => void;
   onClearQuests: () => void;
   onToggleSettings: () => void;
   onShowLeaderboard: () => void;
+  onShowShop: () => void;
   onLogout: () => void;
   onCustomize: () => void;
   isDarkMode: boolean;
@@ -17,28 +17,20 @@ interface TopbarProps {
 
 export function Topbar({
   state,
-  onNameChange,
   onClearQuests,
   onToggleSettings,
   onShowLeaderboard,
+  onShowShop,
   onLogout,
   onCustomize,
   isDarkMode,
   onToggleTheme,
 }: TopbarProps) {
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(state.characterName);
   const [showSettings, setShowSettings] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { level, currentInLevel, needed } = xpToNextLevel(state.totalXp);
-  const classTitle = getClassTitle(state.stats);
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-
-  useEffect(() => {
-    if (editingName) inputRef.current?.focus();
-  }, [editingName]);
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   useEffect(() => {
     if (!showSettings) return;
@@ -49,36 +41,11 @@ export function Topbar({
     return () => document.removeEventListener('click', handleClick);
   }, [showSettings]);
 
-  const handleNameSubmit = () => {
-    const v = nameInput.trim() || 'Hero';
-    onNameChange(v);
-    setNameInput(v);
-    setEditingName(false);
-  };
-
   return (
     <header className="topbar">
       <div className="topbar-left">
-        {editingName ? (
-          <input
-            ref={inputRef}
-            className="topbar-name"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onBlur={handleNameSubmit}
-            onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
-          />
-        ) : (
-          <span
-            className="topbar-name"
-          >
-            {state.characterName}
-          </span>
-        )}
-        <span className="topbar-sep">·</span>
-        <span className="topbar-class" title={classTitle}>{classTitle}</span>
-        <span className="topbar-sep">·</span>
-        <span className="topbar-xp-label">LVL {level}</span>
+        <ClassIcon classTitle={state.characterConfig?.classTitle} className="topbar-class-icon" />
+        <span className="topbar-date">{today}</span>
       </div>
 
       <div className="topbar-xp-wrap">
@@ -89,13 +56,20 @@ export function Topbar({
           />
         </div>
         <span className="topbar-xp-text">
-          LVL {level} ── LVL {level + 1}  ·  {currentInLevel.toLocaleString()} / {needed.toLocaleString()} XP
+          LVL {level} · {currentInLevel.toLocaleString()} / {needed.toLocaleString()} XP
         </span>
       </div>
 
       <div className="topbar-right">
-        <span className="topbar-streak">🔥 {state.streak.count}</span>
-        <span className="topbar-date">{today}</span>
+        <button
+          type="button"
+          className="topbar-shop-btn"
+          onClick={onShowShop}
+          title="Shop"
+        >
+          <span className="topbar-shop-icon">🛒</span>
+          <span className="topbar-shop-text">Shop</span>
+        </button>
         <button
           type="button"
           className="flex items-center gap-1 px-3 py-1.5 bg-[#f0a500] text-white rounded-md font-mono text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"

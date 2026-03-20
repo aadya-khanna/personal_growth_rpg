@@ -66,6 +66,7 @@ function getDefaultState(): AppState {
     hpMax: 100,
     mp: 80,
     mpMax: 80,
+    coins: 0,
     streak: { count: 0, lastDate: '' },
     stats: { STRENGTH: 10, INTELLECT: 10, AGILITY: 10, WISDOM: 10 },
     quests: [],
@@ -135,6 +136,7 @@ export function loadState(): AppState {
         ...migrated,
         ...parsed,
         characterConfig,
+        coins: typeof parsed.coins === 'number' ? parsed.coins : defaults.coins,
         stats: migrateStats(parsed.stats, defaults.stats),
         streak: parsed.streak ?? defaults.streak,
         achievements: Array.isArray(parsed.achievements)
@@ -208,6 +210,7 @@ export function exportState(state: AppState): string {
       hpMax: state.hpMax,
       mp: state.mp,
       mpMax: state.mpMax,
+      coins: state.coins,
       streak: state.streak,
       stats: state.stats,
       quests: state.quests,
@@ -234,6 +237,7 @@ export function importState(json: string): Partial<AppState> {
   if (typeof data.hpMax === 'number') result.hpMax = data.hpMax;
   if (typeof data.mp === 'number') result.mp = data.mp;
   if (typeof data.mpMax === 'number') result.mpMax = data.mpMax;
+  if (typeof data.coins === 'number') result.coins = data.coins;
   if (data.streak && typeof (data.streak as { count?: number }).count === 'number')
     result.streak = data.streak as AppState['streak'];
   if (data.stats && typeof data.stats === 'object') {

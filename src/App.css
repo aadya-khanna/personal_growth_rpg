@@ -72,37 +72,19 @@ body {
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.topbar-name {
-  font-family: 'Cinzel', serif;
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--text);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.topbar-name:hover { background: var(--bg); }
-.topbar-name input {
-  font-family: inherit;
-  font-size: inherit;
-  border: none;
-  background: transparent;
-  width: 120px;
-  outline: none;
+.topbar-class-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
   color: var(--text);
 }
 
-.topbar-sep { color: var(--muted); }
-
-.topbar-class {
-  font-style: italic;
-  color: var(--muted);
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.topbar-date {
+  color: var(--text);
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -153,13 +135,27 @@ body {
 .topbar-leaderboard:hover {
   transform: translateY(-1px);
 }
-.topbar-streak {
+
+.topbar-shop-btn {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
   color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  transition: background 0.2s, border-color 0.2s;
 }
-.topbar-date { color: var(--muted); }
+.topbar-shop-btn:hover {
+  background: var(--bg);
+  border-color: var(--text);
+}
+.topbar-shop-icon { font-size: 16px; line-height: 1; }
+.topbar-shop-text { white-space: nowrap; }
 
 .topbar-settings {
   background: none;
@@ -297,6 +293,53 @@ body {
   height: 100%;
   border-radius: 4px;
   transition: width 0.4s ease;
+}
+
+.panel-character-info {
+  width: 100%;
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.panel-character-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.panel-character-name:hover { background: var(--bg); }
+.panel-character-name-input {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+  outline: none;
+}
+.panel-character-class {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.panel-character-level {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
 }
 
 .equipment-slots {
@@ -740,6 +783,70 @@ body {
 @keyframes levelUpPop {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* Shop modal — 90% of screen */
+.shop-modal {
+  width: 90vw;
+  height: 90vh;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.shop-modal-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.shop-modal-close {
+  padding: 8px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  cursor: pointer;
+}
+.shop-modal-close:hover {
+  background: var(--border);
+}
+.shop-modal-coins {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+}
+.shop-coin-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.shop-modal-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.shop-under-construction {
+  font-size: 18px;
+  color: var(--muted);
+  font-style: italic;
 }
 
 /* Settings dropdown */

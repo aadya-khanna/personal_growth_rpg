@@ -26,6 +26,7 @@ import {
   POWER_FOCUS_MP_COST,
   POWER_FOCUS_MULTIPLIER,
   RECOVERY_TASKS_NEEDED,
+  questCoinsReward,
 } from './types';
 import { loadState, saveState, xpToNextLevel } from './store';
 import { generateCharacterName } from './api';
@@ -43,6 +44,7 @@ import {
   parseClothingFromDb,
   serializeClothingForDb,
 } from './characterSprites';
+import { CoinIcon } from './CoinIcon';
 
 function todayStr(): string {
   return new Date().toDateString();
@@ -123,6 +125,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(loadState);
   const [levelUpVisible, setLevelUpVisible] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   const [showCustomization, setShowCustomization] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -414,12 +417,14 @@ export default function App() {
         }
       }
 
+      let coins = next.coins;
       if (allDone && !wasDone) {
         const completedQuest = { ...quest, subTasks: nextSubTasks, completedAt: Date.now() };
         completedQuests = [...completedQuests, completedQuest];
         quests = quests.filter((q) => q.id !== questId);
         totalXp += Math.round(quest.xpReward * mult);
         stats[quest.skill] = Math.min(100, stats[quest.skill] + Math.round(quest.statReward * mult));
+        coins += questCoinsReward(quest.difficulty);
         next = updateStreakOnComplete(next);
         let achievements = next.achievements;
         if (completedQuests.length === 1) achievements = applyAchievement(achievements, 'first_quest', Date.now());
@@ -439,6 +444,7 @@ export default function App() {
         completedQuests,
         totalXp,
         stats,
+        coins,
       };
     });
   }, []);
@@ -490,7 +496,10 @@ export default function App() {
         achievements = applyAchievement(achievements, 'all_stats_50', Date.now());
       }
 
-      return { ...next, totalXp, level, stats, quests, completedQuests, achievements };
+      const coinsEarned = questCoinsReward(quest.difficulty);
+      const coins = next.coins + coinsEarned;
+
+      return { ...next, totalXp, level, stats, quests, completedQuests, achievements, coins };
     });
   }, []);
 
@@ -579,17 +588,17 @@ export default function App() {
     <div className="app">
       <Topbar
         state={state}
-        onNameChange={onNameChange}
         onClearQuests={handleClearQuests}
         onToggleSettings={() => setState((s) => ({ ...s, settingsOpen: !s.settingsOpen }))}
         onShowLeaderboard={() => setLeaderboardOpen(true)}
+        onShowShop={() => setShopOpen(true)}
         onLogout={handleLogout}
         onCustomize={() => setShowCustomization(true)}
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
       <main className="main">
-        <CharacterPanel state={state} />
+        <CharacterPanel state={state} onNameChange={onNameChange} />
         <QuestLog
           state={state}
           onAddQuest={addQuest}
@@ -607,7 +616,29 @@ export default function App() {
           onClose={() => setLeaderboardOpen(false)}
         />
       )}
-      
+      {shopOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="shop-modal">
+            <div className="shop-modal-header">
+              <h2 className="font-heading font-bold text-2xl text-[var(--text)]">Shop</h2>
+              <button
+                type="button"
+                className="shop-modal-close"
+                onClick={() => setShopOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="shop-modal-coins">
+              <CoinIcon className="shop-coin-icon" />
+              <span>Coins: {state.coins.toLocaleString()}</span>
+            </div>
+            <div className="shop-modal-body">
+              <p className="shop-under-construction">Under construction</p>
+            </div>
+          </div>
+        </div>
+      )}
       {showCustomization && state.characterConfig && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="char-customization-modal rounded-2xl shadow-2xl w-[95%] max-w-[60.8rem] max-h-[90vh] overflow-auto flex flex-col items-center">

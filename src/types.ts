@@ -83,6 +83,7 @@ export interface AppState {
   hpMax: number;
   mp: number;
   mpMax: number;
+  coins: number;
   streak: { count: number; lastDate: string };
   stats: Stats;
   quests: Quest[];
@@ -115,6 +116,9 @@ export const DIFFICULTY_STAT: Record<Difficulty, number> = {
   4: 15,
   5: 15,
 };
+
+/** Coins earned per quest completion: difficulty * 5 */
+export const questCoinsReward = (difficulty: Difficulty): number => difficulty * 5;
 
 export const SUBTASK_XP = 15;
 export const SUBTASK_STAT = 1;

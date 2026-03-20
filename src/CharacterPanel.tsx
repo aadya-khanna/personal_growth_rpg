@@ -1,10 +1,13 @@
+import { useState, useRef, useEffect } from 'react';
 import type { AppState } from './types';
-import { getClassFlavor, getEquipmentTier } from './utils';
+import { getClassFlavor, getClassTitle, getEquipmentTier } from './utils';
+import { xpToNextLevel } from './store';
 import type { StatId } from './types';
 import { buildSpriteLayers, getIdleFrameStyle } from './characterSprites';
 
 interface CharacterPanelProps {
   state: AppState;
+  onNameChange?: (name: string) => void;
 }
 
 const EQUIPMENT_NAMES = [
@@ -14,12 +17,33 @@ const EQUIPMENT_NAMES = [
   ['Pendant', 'Amulet', 'Focus Crystal', 'Arcane Orb'],
 ];
 
-export function CharacterPanel({ state }: CharacterPanelProps) {
+export function CharacterPanel({ state, onNameChange }: CharacterPanelProps) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(state.characterName);
+  const inputRef = useRef<HTMLInputElement>(null);
   const tier = getEquipmentTier(state.level);
+  const { level } = xpToNextLevel(state.totalXp);
+  const classTitle = getClassTitle(state.stats);
   const topStat = (['STRENGTH', 'INTELLECT', 'AGILITY', 'WISDOM'] as StatId[]).reduce((a, b) =>
     state.stats[b] > state.stats[a] ? b : a
   );
   const flavor = getClassFlavor(topStat);
+
+  useEffect(() => {
+    setNameInput(state.characterName);
+  }, [state.characterName]);
+  useEffect(() => {
+    if (editingName) inputRef.current?.focus();
+  }, [editingName]);
+
+  const handleNameSubmit = () => {
+    if (onNameChange) {
+      const v = nameInput.trim() || 'Hero';
+      onNameChange(v);
+      setNameInput(v);
+    }
+    setEditingName(false);
+  };
 
   return (
     <div className={`panel-character ${state.fainted ? 'fainted' : ''}`}>
@@ -57,6 +81,34 @@ export function CharacterPanel({ state }: CharacterPanelProps) {
           />
         </div>
         <span>{state.mp} / {state.mpMax} ✦</span>
+      </div>
+      <div className="panel-character-info">
+        {onNameChange ? (
+          editingName ? (
+            <input
+              ref={inputRef}
+              className="panel-character-name-input"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onBlur={handleNameSubmit}
+              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+            />
+          ) : (
+            <span
+              className="panel-character-name"
+              onClick={() => setEditingName(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setEditingName(true)}
+            >
+              {state.characterName}
+            </span>
+          )
+        ) : (
+          <span className="panel-character-name">{state.characterName}</span>
+        )}
+        <span className="panel-character-class" title={classTitle}>{classTitle}</span>
+        <span className="panel-character-level">LVL {level}</span>
       </div>
       <div className="equipment-slots">
         <span className="equipment-slots-label" title="Revealed by level: weapon, armor, helm, accessory">
