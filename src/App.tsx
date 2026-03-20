@@ -9,8 +9,10 @@ import type {
   SubTask,
   Achievement,
   CharacterConfig,
+  ClothingConfig,
   Gender,
   SkinTone,
+  TopOption,
 } from './types';
 import {
   DIFFICULTY_XP,
@@ -32,7 +34,15 @@ import { Topbar } from './Topbar';
 import { CharacterPanel } from './CharacterPanel';
 import { QuestLog } from './QuestLog';
 import { StatsPanel } from './StatsPanel';
-import { buildSpriteLayers, getIdleFrameStyle, HAIR_COLORS, getWeaponForClass } from './characterSprites';
+import {
+  buildSpriteLayers,
+  getIdleFrameStyle,
+  HAIR_COLORS,
+  getWeaponForClass,
+  getDefaultClothing,
+  parseClothingFromDb,
+  serializeClothingForDb,
+} from './characterSprites';
 
 function todayStr(): string {
   return new Date().toDateString();
@@ -309,7 +319,7 @@ export default function App() {
                 skin_tone: config.skinTone,
                 hair_style: config.hairStyle,
                 hair_color: config.hairColor,
-                clothing: config.clothing,
+                clothing: serializeClothingForDb(config.clothing),
                 weapon: config.weapon,
                 level: merged.level,
                 xp: merged.totalXp,
@@ -574,14 +584,12 @@ export default function App() {
         onToggleSettings={() => setState((s) => ({ ...s, settingsOpen: !s.settingsOpen }))}
         onShowLeaderboard={() => setLeaderboardOpen(true)}
         onLogout={handleLogout}
+        onCustomize={() => setShowCustomization(true)}
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
       <main className="main">
-        <CharacterPanel 
-          state={state} 
-          onCustomize={() => setShowCustomization(true)}
-        />
+        <CharacterPanel state={state} />
         <QuestLog
           state={state}
           onAddQuest={addQuest}
@@ -602,7 +610,7 @@ export default function App() {
       
       {showCustomization && state.characterConfig && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-[60.8rem] max-h-[90vh] overflow-auto flex flex-col items-center">
             <CharacterCreation
               loading={false}
               onBack={() => setShowCustomization(false)}
@@ -625,7 +633,7 @@ export default function App() {
                         skin_tone: config.skinTone,
                         hair_style: config.hairStyle,
                         hair_color: config.hairColor,
-                        clothing: config.clothing,
+                        clothing: serializeClothingForDb(config.clothing),
                         weapon: config.weapon,
                       }).eq('id', authUser.id);
                     } catch (e) {
@@ -887,7 +895,18 @@ interface CharacterCreationProps {
   initialConfig?: CharacterConfig | null;
 }
 
-const CLOTHING_OPTIONS = ['basic', 'blue', 'green', 'purple', 'orange'];
+const TOP_OPTIONS: TopOption[] = [
+  'basic-corset', 'blue-corset', 'green-corset', 'purple-corset', 'orange-corset',
+  'basic-shirt', 'blue-shirt', 'green-shirt', 'purple-shirt', 'orange-shirt',
+];
+const BOTTOMS_OPTIONS = ['skirt', 'basic', 'blue', 'green', 'purple', 'orange'] as const;
+const COLOR_LABELS: Record<string, string> = {
+  basic: 'Basic',
+  blue: 'Blue',
+  green: 'Green',
+  purple: 'Purple',
+  orange: 'Orange',
+};
 
 const CLASS_TITLE_OPTIONS = [
   'Knight',
@@ -898,15 +917,23 @@ const CLASS_TITLE_OPTIONS = [
 ];
 
 function CharacterCreation({ loading, onBack, onComplete, initialConfig }: CharacterCreationProps) {
+  const [screen, setScreen] = useState<'identity' | 'clothing'>('identity');
   const [gender, setGender] = useState<Gender>(initialConfig?.gender ?? 'male');
   const [skinTone, setSkinTone] = useState<SkinTone>(initialConfig?.skinTone ?? 'tone3');
   const [characterName, setCharacterName] = useState(initialConfig?.characterName ?? '');
   const [classTitle, setClassTitle] = useState(initialConfig?.classTitle ?? 'Knight');
   const [hairColor, setHairColor] = useState<string>(initialConfig?.hairColor ?? HAIR_COLORS[1]);
-  const [clothing, setClothing] = useState<string>(initialConfig?.clothing ?? CLOTHING_OPTIONS[0]);
+  const [clothing, setClothing] = useState<ClothingConfig>(() =>
+    initialConfig?.clothing ?? getDefaultClothing(initialConfig?.gender ?? 'male')
+  );
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  const handleGenderChange = (g: Gender) => {
+    setGender(g);
+    setClothing(getDefaultClothing(g));
+  };
 
   const spriteLayers = buildSpriteLayers({
     gender,
@@ -947,8 +974,90 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
     onComplete(cfg);
   };
 
+  const sharedPreview = (
+    <div className="w-[260px] shrink-0 flex flex-col">
+      <div className="rounded-xl bg-linear-to-b from-amber-50/60 via-[#f7f5f0] to-[#e3dbc9] flex flex-col items-center justify-between flex-1 min-h-0 p-4">
+        <div className="character-preview-sprite w-[290px] h-[240px] relative" ref={previewRef}>
+          {spriteLayers.map((src, idx) => (
+            <div
+              key={idx}
+              className="character-preview-layer"
+              style={getIdleFrameStyle(src, 240)}
+            />
+          ))}
+        </div>
+        <div className="text-center pt-3 w-full">
+          <div className="font-heading font-semibold text-xl text-gray-900">{characterName || 'Your Name'}</div>
+          <div className="font-mono text-base text-gray-500 mt-1">{classTitle || 'Wandering Adventurer'}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (screen === 'clothing') {
+    const topLabel = (opt: TopOption) => {
+      const [color, type] = opt.split('-');
+      return `${COLOR_LABELS[color] ?? color} ${type}`;
+    };
+    const bottomsLabel = (b: string) => (b === 'skirt' ? 'Skirt' : `${COLOR_LABELS[b] ?? b} pants`);
+    return (
+      <div className="flex flex-col w-full max-w-3xl mx-auto items-center">
+        <header className="text-center pt-2 pb-6">
+          <h1 className="font-heading font-bold text-3xl tracking-wide text-gray-900">
+            Customise Clothing
+          </h1>
+        </header>
+        <div className="flex justify-center w-full">
+          <div className="flex gap-10 sm:gap-12 items-center justify-center">
+            {sharedPreview}
+            <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0 items-center">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-heading font-medium text-gray-600">Top</span>
+                <select
+                  value={clothing.top}
+                  onChange={(e) => setClothing((c) => ({ ...c, top: e.target.value as TopOption }))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+                >
+                  {TOP_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {topLabel(opt)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-heading font-medium text-gray-600">Bottoms</span>
+                <select
+                  value={clothing.bottoms}
+                  onChange={(e) => setClothing((c) => ({ ...c, bottoms: e.target.value as ClothingConfig['bottoms'] }))}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+                >
+                  {BOTTOMS_OPTIONS.map((b) => (
+                    <option key={b} value={b}>
+                      {bottomsLabel(b)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 text-center">Boots are included from your character&apos;s asset set.</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center items-center gap-4 w-full mt-12 pt-6 pb-1">
+          <button
+            type="button"
+            className="min-w-[160px] px-5 py-3 rounded-full bg-gray-100 text-gray-900 border border-gray-200 hover:bg-gray-200 transition text-base font-medium"
+            onClick={() => setScreen('identity')}
+          >
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col w-full max-w-3xl mx-auto">
+    <div className="flex flex-col w-full max-w-3xl mx-auto items-center">
       {/* Title — centered */}
       <header className="text-center pt-2 pb-6">
         <h1 className="font-heading font-bold text-3xl tracking-wide text-gray-900">
@@ -957,54 +1066,34 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
       </header>
 
       {/* Main content: preview + form, centered as a block */}
-      <div className="flex justify-center">
-        <div className="flex gap-10 sm:gap-12 items-stretch">
-          {/* Left: character preview */}
-          <div className="w-[260px] shrink-0 flex flex-col">
-            <div className="rounded-xl bg-linear-to-b from-amber-50/60 via-[#f7f5f0] to-[#e3dbc9] flex flex-col items-center justify-between flex-1 min-h-0 p-4">
-              <div className="character-preview-sprite w-[290px] h-[240px] relative" ref={previewRef}>
-                {spriteLayers.map((src, idx) => (
-                  <div
-                    key={idx}
-                    className="character-preview-layer"
-                    style={getIdleFrameStyle(src, 240)}
-                  />
-                ))}
-              </div>
-              <div className="text-center pt-3 w-full">
-                <div className="font-heading font-semibold text-xl text-gray-900">{characterName || 'Your Name'}</div>
-                <div className="font-mono text-base text-gray-500 mt-1">{classTitle || 'Wandering Adventurer'}</div>
+      <div className="flex justify-center w-full">
+        <div className="flex gap-10 sm:gap-12 items-center justify-center">
+          {sharedPreview}
+          <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0 items-center">
+            <div className="flex flex-col gap-2 items-center w-full">
+              <span className="text-sm font-heading font-medium text-gray-600">Look</span>
+              <div className="inline-flex w-fit rounded-full p-2 gap-2 bg-gray-100 border border-gray-200 mt-0.5">
+                <button
+                  type="button"
+                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'male' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                  onClick={() => handleGenderChange('male')}
+                >
+                  Male
+                </button>
+                <button
+                  type="button"
+                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'female' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                  onClick={() => handleGenderChange('female')}
+                >
+                  Female
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Right: form */}
-          <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0">
-          {/* Look — Male / Female pill toggle */}
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-heading font-medium text-gray-600">Look</span>
-            <div className="inline-flex w-fit rounded-full p-2 gap-2 bg-gray-100 border border-gray-200 mt-0.5">
-              <button
-                type="button"
-                className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'male' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
-                onClick={() => setGender('male')}
-              >
-                Male
-              </button>
-              <button
-                type="button"
-                className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'female' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
-                onClick={() => setGender('female')}
-              >
-                Female
-              </button>
-            </div>
-          </div>
 
           {/* Name — text input + Random (Groq) on same row */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 w-full items-center">
             <span className="text-sm font-heading font-medium text-gray-600">Name</span>
-            <div className="flex gap-2 items-center mt-0.5">
+            <div className="flex gap-2 items-center mt-0.5 w-full">
               <input
                 type="text"
                 value={characterName}
@@ -1024,7 +1113,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
           </div>
 
           {/* Class Title — dropdown only */}
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 w-full items-center">
             <span className="text-sm font-heading font-medium text-gray-600">Class Title</span>
             <select
               value={classTitle}
@@ -1043,7 +1132,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
           </div>
 
           {/* Skin + Hair — two swatch pickers side by side */}
-          <div className="flex gap-6">
+          <div className="flex gap-6 justify-center">
             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
               <span className="text-sm font-heading font-medium text-gray-600">Skin</span>
               <div className="inline-flex w-fit rounded-full p-0.5 gap-0.5 bg-gray-100 border border-gray-200 mt-0.5">
@@ -1078,35 +1167,19 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
             </div>
           </div>
 
-          {/* Clothing — dropdown full width of right column */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-heading font-medium text-gray-600">Clothing</span>
-            <select
-              value={clothing}
-              onChange={(e) => setClothing(e.target.value)}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+            <button
+              type="button"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium transition"
+              onClick={() => setScreen('clothing')}
             >
-              {CLOTHING_OPTIONS.map((c) => {
-                const label =
-                  c === 'basic'  ? 'Basic'  :
-                  c === 'blue'   ? 'Blue'   :
-                  c === 'green'  ? 'Green'  :
-                  c === 'purple' ? 'Purple' :
-                                  'Orange';
-                return (
-                  <option key={c} value={c}>
-                    {label} Outfit
-                  </option>
-                );
-              })}
-            </select>
+              Customise clothing
+            </button>
           </div>
-        </div>
         </div>
       </div>
 
       {/* Actions — centered */}
-      <div className="flex justify-center gap-4 w-full mt-12 pt-6 pb-1">
+      <div className="flex justify-center items-center gap-4 w-full mt-12 pt-6 pb-1">
         <button
           type="button"
           className="min-w-[160px] px-5 py-3 rounded-full bg-gray-100 text-gray-900 border border-gray-200 hover:bg-gray-200 transition text-base font-medium"
@@ -1242,14 +1315,15 @@ function LeaderboardPage({ currentUserId, onClose }: LeaderboardPageProps) {
 
   const buildConfigForRow = (row: LeaderboardProfile): CharacterConfig => {
     const classTitle = row.class_title ?? 'Adventurer';
+    const gender = row.gender ?? 'male';
     return {
-      gender: row.gender ?? 'male',
+      gender,
       characterName: row.character_name ?? row.username ?? 'Hero',
       classTitle: classTitle,
       skinTone: row.skin_tone ?? 'tone3',
       hairStyle: row.hair_style ?? 'dark-brown',
       hairColor: row.hair_color ?? 'dark-brown',
-      clothing: row.clothing ?? 'basic',
+      clothing: parseClothingFromDb(row.clothing, gender),
       weapon: getWeaponForClass(classTitle),
     };
   };

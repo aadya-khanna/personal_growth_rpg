@@ -1,8 +1,9 @@
-import type { AppState, Quest, Daily, Achievement, StatId, Stats } from './types';
+import type { AppState, Quest, Daily, Achievement, CharacterConfig, StatId, Stats } from './types';
 import {
   ACHIEVEMENT_DEFS,
   LEVEL_FORMULA,
 } from './types';
+import { parseClothingFromDb } from './characterSprites';
 
 const STORAGE_KEY = 'personal-growth-rpg-v1';
 
@@ -29,6 +30,31 @@ function migrateStats(
 function migrateSkill(skill: string | undefined): StatId {
   if (!skill) return 'STRENGTH';
   return (OLD_TO_NEW_STAT[skill] ?? skill) as StatId;
+}
+
+function migrateCharacterConfig(raw: unknown): CharacterConfig | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const c = raw as Record<string, unknown>;
+  const gender = (c.gender as string) ?? 'male';
+  let clothing;
+  if (
+    c.clothing &&
+    typeof c.clothing === 'object' &&
+    (c.clothing as Record<string, unknown>).top &&
+    (c.clothing as Record<string, unknown>).bottoms
+  ) {
+    const cl = c.clothing as Record<string, unknown>;
+    const top = cl.top as string;
+    const validNewTops = ['basic-corset', 'blue-corset', 'green-corset', 'purple-corset', 'orange-corset', 'basic-shirt', 'blue-shirt', 'green-shirt', 'purple-shirt', 'orange-shirt'];
+    if (validNewTops.includes(top)) {
+      clothing = c.clothing;
+    } else {
+      clothing = parseClothingFromDb(top, gender as 'male' | 'female');
+    }
+  } else {
+    clothing = parseClothingFromDb(typeof c.clothing === 'string' ? c.clothing : null, gender as 'male' | 'female');
+  }
+  return { ...c, clothing } as CharacterConfig;
 }
 
 function getDefaultState(): AppState {
@@ -101,10 +127,14 @@ export function loadState(): AppState {
       const parsed = JSON.parse(raw) as Partial<AppState>;
       const defaults = getDefaultState();
       const migrated = migrateFromLegacy();
+      const characterConfig = parsed.characterConfig
+        ? migrateCharacterConfig(parsed.characterConfig)
+        : parsed.characterConfig ?? defaults.characterConfig;
       const merged: AppState = {
         ...defaults,
         ...migrated,
         ...parsed,
+        characterConfig,
         stats: migrateStats(parsed.stats, defaults.stats),
         streak: parsed.streak ?? defaults.streak,
         achievements: Array.isArray(parsed.achievements)
@@ -196,7 +226,7 @@ export function importState(json: string): Partial<AppState> {
   const result: Partial<AppState> = {};
   if (typeof data.characterName === 'string') result.characterName = data.characterName;
   if (data.characterConfig && typeof data.characterConfig === 'object') {
-    result.characterConfig = data.characterConfig as AppState['characterConfig'];
+    result.characterConfig = migrateCharacterConfig(data.characterConfig);
   }
   if (typeof data.totalXp === 'number') result.totalXp = data.totalXp;
   if (typeof data.level === 'number') result.level = data.level;

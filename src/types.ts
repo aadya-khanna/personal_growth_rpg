@@ -6,6 +6,17 @@ export type Gender = 'male' | 'female' | 'nonbinary';
 
 export type SkinTone = 'tone1' | 'tone2' | 'tone3' | 'tone4' | 'tone5';
 
+/** Top: corset or shirt (both available to all genders). Bottoms: skirt or pants. */
+export type TopOption =
+  | 'basic-corset' | 'blue-corset' | 'green-corset' | 'purple-corset' | 'orange-corset'
+  | 'basic-shirt' | 'blue-shirt' | 'green-shirt' | 'purple-shirt' | 'orange-shirt';
+
+export interface ClothingConfig {
+  top: TopOption;
+  bottoms: 'skirt' | 'basic' | 'blue' | 'green' | 'purple' | 'orange';
+  boots: 'boots';
+}
+
 export interface CharacterConfig {
   gender: Gender;
   characterName: string;
@@ -13,9 +24,12 @@ export interface CharacterConfig {
   skinTone: SkinTone;
   hairStyle: string;
   hairColor: string;
-  clothing: string;
+  clothing: ClothingConfig;
   weapon: string;
 }
+
+export const CLOTHING_COLORS = ['basic', 'blue', 'green', 'purple', 'orange'] as const;
+export type ClothingColor = (typeof CLOTHING_COLORS)[number];
 
 export interface SubTask {
   id: string;

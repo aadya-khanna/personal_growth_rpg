@@ -10,6 +10,7 @@ interface TopbarProps {
   onToggleSettings: () => void;
   onShowLeaderboard: () => void;
   onLogout: () => void;
+  onCustomize: () => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
 }
@@ -21,6 +22,7 @@ export function Topbar({
   onToggleSettings,
   onShowLeaderboard,
   onLogout,
+  onCustomize,
   isDarkMode,
   onToggleTheme,
 }: TopbarProps) {
@@ -116,6 +118,14 @@ export function Topbar({
           </button>
           {showSettings && (
             <div className="settings-dropdown">
+              {state.characterConfig && (
+                <button
+                  type="button"
+                  onClick={() => { onCustomize(); setShowSettings(false); }}
+                >
+                  ✎ Customize Character
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => { onToggleTheme(); setShowSettings(false); }}
