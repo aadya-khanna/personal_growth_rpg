@@ -825,3 +825,39 @@ body {
 .color-swatch--hair-3 { background: #b3412f; } /* red */
 .color-swatch--hair-4 { background: #f4d27a; } /* blonde */
 .color-swatch--hair-5 { background: #111111; } /* black */
+
+/* Character customization modal — theme-aware (dark mode) */
+.char-customization-modal {
+  background: var(--surface);
+  color: var(--text);
+}
+.char-customization-preview {
+  background: linear-gradient(to bottom, var(--border) 0%, var(--bg) 50%, var(--bg) 100%);
+}
+.char-customization-label { color: var(--muted); }
+.char-customization-input,
+.char-customization-select {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.char-customization-pill-bg { background: var(--bg); border-color: var(--border); }
+.char-customization-pill-selected { background: var(--surface); color: var(--text); }
+.char-customization-pill-unselected { color: var(--muted); }
+.char-customization-btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.char-customization-btn-secondary:hover { background: var(--border); }
+.char-customization-btn-customise {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.char-customization-btn-customise:hover { background: var(--border); }
+.char-customization-h1 { color: var(--text); }
+.char-customization-name { color: var(--text); }
+.char-customization-class { color: var(--muted); }
+.char-customization-note { color: var(--muted); }
+.char-customization-error { color: var(--hp); }

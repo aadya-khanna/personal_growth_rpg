@@ -71,10 +71,6 @@ export function Topbar({
         ) : (
           <span
             className="topbar-name"
-            onClick={() => setEditingName(true)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setEditingName(true)}
           >
             {state.characterName}
           </span>

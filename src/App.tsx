@@ -610,7 +610,7 @@ export default function App() {
       
       {showCustomization && state.characterConfig && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-[60.8rem] max-h-[90vh] overflow-auto flex flex-col items-center">
+          <div className="char-customization-modal rounded-2xl shadow-2xl w-[95%] max-w-[60.8rem] max-h-[90vh] overflow-auto flex flex-col items-center">
             <CharacterCreation
               loading={false}
               onBack={() => setShowCustomization(false)}
@@ -976,7 +976,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
 
   const sharedPreview = (
     <div className="w-[260px] shrink-0 flex flex-col">
-      <div className="rounded-xl bg-linear-to-b from-amber-50/60 via-[#f7f5f0] to-[#e3dbc9] flex flex-col items-center justify-between flex-1 min-h-0 p-4">
+      <div className="char-customization-preview rounded-xl flex flex-col items-center justify-between flex-1 min-h-0 p-4">
         <div className="character-preview-sprite w-[290px] h-[240px] relative" ref={previewRef}>
           {spriteLayers.map((src, idx) => (
             <div
@@ -987,8 +987,8 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
           ))}
         </div>
         <div className="text-center pt-3 w-full">
-          <div className="font-heading font-semibold text-xl text-gray-900">{characterName || 'Your Name'}</div>
-          <div className="font-mono text-base text-gray-500 mt-1">{classTitle || 'Wandering Adventurer'}</div>
+          <div className="char-customization-name font-heading font-semibold text-xl">{characterName || 'Your Name'}</div>
+          <div className="char-customization-class font-mono text-base mt-1">{classTitle || 'Wandering Adventurer'}</div>
         </div>
       </div>
     </div>
@@ -1003,7 +1003,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
     return (
       <div className="flex flex-col w-full max-w-3xl mx-auto items-center">
         <header className="text-center pt-2 pb-6">
-          <h1 className="font-heading font-bold text-3xl tracking-wide text-gray-900">
+          <h1 className="char-customization-h1 font-heading font-bold text-3xl tracking-wide">
             Customise Clothing
           </h1>
         </header>
@@ -1012,11 +1012,11 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
             {sharedPreview}
             <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0 items-center">
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-heading font-medium text-gray-600">Top</span>
+                <span className="char-customization-label text-sm font-heading font-medium">Top</span>
                 <select
                   value={clothing.top}
                   onChange={(e) => setClothing((c) => ({ ...c, top: e.target.value as TopOption }))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+                  className="char-customization-select mt-1 w-full px-3 py-2 rounded-lg border text-base font-mono"
                 >
                   {TOP_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
@@ -1026,11 +1026,11 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-heading font-medium text-gray-600">Bottoms</span>
+                <span className="char-customization-label text-sm font-heading font-medium">Bottoms</span>
                 <select
                   value={clothing.bottoms}
                   onChange={(e) => setClothing((c) => ({ ...c, bottoms: e.target.value as ClothingConfig['bottoms'] }))}
-                  className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+                  className="char-customization-select mt-1 w-full px-3 py-2 rounded-lg border text-base font-mono"
                 >
                   {BOTTOMS_OPTIONS.map((b) => (
                     <option key={b} value={b}>
@@ -1039,14 +1039,14 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
                   ))}
                 </select>
               </div>
-              <p className="text-xs text-gray-500 mt-1 text-center">Boots are included from your character&apos;s asset set.</p>
+              <p className="char-customization-note text-xs mt-1 text-center">Boots are included from your character&apos;s asset set.</p>
             </div>
           </div>
         </div>
         <div className="flex justify-center items-center gap-4 w-full mt-12 pt-6 pb-1">
           <button
             type="button"
-            className="min-w-[160px] px-5 py-3 rounded-full bg-gray-100 text-gray-900 border border-gray-200 hover:bg-gray-200 transition text-base font-medium"
+            className="char-customization-btn-secondary min-w-[160px] px-5 py-3 rounded-full transition text-base font-medium"
             onClick={() => setScreen('identity')}
           >
             Back
@@ -1060,7 +1060,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
     <div className="flex flex-col w-full max-w-3xl mx-auto items-center">
       {/* Title — centered */}
       <header className="text-center pt-2 pb-6">
-        <h1 className="font-heading font-bold text-3xl tracking-wide text-gray-900">
+        <h1 className="char-customization-h1 font-heading font-bold text-3xl tracking-wide">
           Forge Your Avatar
         </h1>
       </header>
@@ -1071,18 +1071,18 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
           {sharedPreview}
           <div className="flex flex-col gap-5 w-[320px] sm:w-[380px] min-w-0 items-center">
             <div className="flex flex-col gap-2 items-center w-full">
-              <span className="text-sm font-heading font-medium text-gray-600">Look</span>
-              <div className="inline-flex w-fit rounded-full p-2 gap-2 bg-gray-100 border border-gray-200 mt-0.5">
+              <span className="char-customization-label text-sm font-heading font-medium">Look</span>
+              <div className="char-customization-pill-bg inline-flex w-fit rounded-full p-2 gap-2 border mt-0.5">
                 <button
                   type="button"
-                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'male' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'male' ? 'char-customization-pill-selected shadow-sm ring-1 ring-[var(--border)]' : 'char-customization-pill-unselected'}`}
                   onClick={() => handleGenderChange('male')}
                 >
                   Male
                 </button>
                 <button
                   type="button"
-                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'female' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-full text-sm font-mono whitespace-nowrap transition ${gender === 'female' ? 'char-customization-pill-selected shadow-sm ring-1 ring-[var(--border)]' : 'char-customization-pill-unselected'}`}
                   onClick={() => handleGenderChange('female')}
                 >
                   Female
@@ -1092,33 +1092,33 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
 
           {/* Name — text input + Random (Groq) on same row */}
           <div className="flex flex-col gap-1.5 w-full items-center">
-            <span className="text-sm font-heading font-medium text-gray-600">Name</span>
+            <span className="char-customization-label text-sm font-heading font-medium">Name</span>
             <div className="flex gap-2 items-center mt-0.5 w-full">
               <input
                 type="text"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+                className="char-customization-input flex-1 min-w-0 px-3 py-2 rounded-lg border text-base font-mono"
               />
               <button
                 type="button"
-                className="shrink-0 py-2 px-3 text-sm font-mono border border-gray-200 rounded-full hover:bg-gray-100 transition disabled:opacity-70"
+                className="char-customization-btn-secondary shrink-0 py-2 px-3 text-sm font-mono rounded-full transition disabled:opacity-70"
                 onClick={handleRandomName}
                 disabled={aiLoading}
               >
                 {aiLoading ? 'Rolling...' : 'Random'}
               </button>
             </div>
-            {aiError && <div className="text-red-500 text-sm mt-0.5">{aiError}</div>}
+            {aiError && <div className="char-customization-error text-sm mt-0.5">{aiError}</div>}
           </div>
 
           {/* Class Title — dropdown only */}
           <div className="flex flex-col gap-1.5 w-full items-center">
-            <span className="text-sm font-heading font-medium text-gray-600">Class Title</span>
+            <span className="char-customization-label text-sm font-heading font-medium">Class Title</span>
             <select
               value={classTitle}
               onChange={(e) => setClassTitle(e.target.value)}
-              className="mt-0.5 w-full px-3 py-2 rounded-lg border border-gray-200 text-base font-mono text-gray-900"
+              className="char-customization-select mt-0.5 w-full px-3 py-2 rounded-lg border text-base font-mono"
             >
               {CLASS_TITLE_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
@@ -1134,13 +1134,13 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
           {/* Skin + Hair — two swatch pickers side by side */}
           <div className="flex gap-6 justify-center">
             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <span className="text-sm font-heading font-medium text-gray-600">Skin</span>
-              <div className="inline-flex w-fit rounded-full p-0.5 gap-0.5 bg-gray-100 border border-gray-200 mt-0.5">
+              <span className="char-customization-label text-sm font-heading font-medium">Skin</span>
+              <div className="char-customization-pill-bg inline-flex w-fit rounded-full p-0.5 gap-0.5 border mt-0.5">
                 {(['tone1', 'tone2', 'tone3', 'tone4', 'tone5'] as SkinTone[]).map((tone, idx) => (
                   <button
                     key={tone}
                     type="button"
-                    className={`p-0.5 rounded-full transition ${skinTone === tone ? 'bg-white shadow-sm ring-1 ring-gray-200' : ''}`}
+                    className={`p-0.5 rounded-full transition ${skinTone === tone ? 'char-customization-pill-selected shadow-sm ring-1 ring-[var(--border)]' : ''}`}
                     onClick={() => setSkinTone(tone)}
                     title={`Skin tone ${idx + 1}`}
                   >
@@ -1150,13 +1150,13 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
               </div>
             </div>
             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <span className="text-sm font-heading font-medium text-gray-600">Hair</span>
-              <div className="inline-flex w-fit rounded-full p-0.5 gap-0.5 bg-gray-100 border border-gray-200 mt-0.5">
+              <span className="char-customization-label text-sm font-heading font-medium">Hair</span>
+              <div className="char-customization-pill-bg inline-flex w-fit rounded-full p-0.5 gap-0.5 border mt-0.5">
                 {HAIR_COLORS.map((c, idx) => (
                   <button
                     key={c}
                     type="button"
-                    className={`p-0.5 rounded-full transition ${hairColor === c ? 'bg-white shadow-sm ring-1 ring-gray-200' : ''}`}
+                    className={`p-0.5 rounded-full transition ${hairColor === c ? 'char-customization-pill-selected shadow-sm ring-1 ring-[var(--border)]' : ''}`}
                     onClick={() => setHairColor(c)}
                     title={c.replace('-', ' ')}
                   >
@@ -1169,7 +1169,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
 
             <button
               type="button"
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium transition"
+              className="char-customization-btn-customise w-full px-4 py-3 rounded-lg border font-medium transition"
               onClick={() => setScreen('clothing')}
             >
               Customise clothing
@@ -1182,7 +1182,7 @@ function CharacterCreation({ loading, onBack, onComplete, initialConfig }: Chara
       <div className="flex justify-center items-center gap-4 w-full mt-12 pt-6 pb-1">
         <button
           type="button"
-          className="min-w-[160px] px-5 py-3 rounded-full bg-gray-100 text-gray-900 border border-gray-200 hover:bg-gray-200 transition text-base font-medium"
+          className="char-customization-btn-secondary min-w-[160px] px-5 py-3 rounded-full transition text-base font-medium"
           onClick={onBack}
         >
           Back
