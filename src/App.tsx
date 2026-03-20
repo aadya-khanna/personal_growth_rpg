@@ -560,10 +560,6 @@ export default function App() {
     setState((s) => (s.powerFocusActive ? { ...s, powerFocusActive: false } : s));
   }, []);
 
-  const onNameChange = useCallback((name: string) => {
-    setState((s) => ({ ...s, characterName: name }));
-  }, []);
-
   const handleClearQuests = useCallback(() => {
     setState((s) => ({ ...s, quests: [], completedQuests: [] }));
   }, []);
@@ -585,7 +581,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="flex flex-col h-screen max-h-screen">
       <Topbar
         state={state}
         onClearQuests={handleClearQuests}
@@ -597,8 +593,8 @@ export default function App() {
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
       />
-      <main className="main">
-        <CharacterPanel state={state} onNameChange={onNameChange} />
+      <main className="flex-1 flex min-h-0 animate-[fadeUp_0.5s_ease-out_0.08s_both]">
+        <CharacterPanel state={state} />
         <QuestLog
           state={state}
           onAddQuest={addQuest}
@@ -618,23 +614,23 @@ export default function App() {
       )}
       {shopOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="shop-modal">
-            <div className="shop-modal-header">
-              <h2 className="font-heading font-bold text-2xl text-[var(--text)]">Shop</h2>
+          <div className="w-[90vw] h-[90vh] max-w-[90vw] max-h-[90vh] bg-surface border border-border rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between py-4 px-5 border-b border-border">
+              <h2 className="font-heading font-bold text-2xl text-text">Shop</h2>
               <button
                 type="button"
-                className="shop-modal-close"
+                className="py-2 px-4 bg-bg border border-border rounded-lg text-text font-mono text-[13px] cursor-pointer hover:bg-border"
                 onClick={() => setShopOpen(false)}
               >
                 Close
               </button>
             </div>
-            <div className="shop-modal-coins">
-              <CoinIcon className="shop-coin-icon" />
+            <div className="shrink-0 flex items-center gap-2 py-3 px-5 border-b border-border text-text font-mono text-sm">
+              <CoinIcon className="w-5 h-5 shrink-0" />
               <span>Coins: {state.coins.toLocaleString()}</span>
             </div>
-            <div className="shop-modal-body">
-              <p className="shop-under-construction">Under construction</p>
+            <div className="flex-1 flex items-center justify-center p-6">
+              <p className="text-lg text-muted italic">Under construction</p>
             </div>
           </div>
         </div>
@@ -679,8 +675,11 @@ export default function App() {
         </div>
       )}
       {levelUpVisible && (
-        <div className="level-up-overlay" aria-live="polite">
-          <h2>⚔ LEVEL UP ⚔</h2>
+        <div
+          className="fixed inset-0 bg-[rgba(247,245,240,0.95)] flex items-center justify-center z-[200] animate-[fadeIn_0.3s_ease]"
+          aria-live="polite"
+        >
+          <h2 className="font-heading text-5xl font-bold text-xp drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] animate-[levelUpPop_0.5s_ease_0.2s_both]">⚔ LEVEL UP ⚔</h2>
         </div>
       )}
     </div>

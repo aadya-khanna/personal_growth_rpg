@@ -42,55 +42,50 @@ export function Topbar({
   }, [showSettings]);
 
   return (
-    <header className="topbar">
-      <div className="topbar-left">
-        <ClassIcon classTitle={state.characterConfig?.classTitle} className="topbar-class-icon" />
-        <span className="topbar-date">{today}</span>
+    <header className="shrink-0 flex items-center justify-between py-2.5 px-4 bg-surface border-b border-border font-mono text-[13px] animate-[fadeUp_0.4s_ease-out]">
+      <div className="flex items-center gap-2.5">
+        <ClassIcon classTitle={state.characterConfig?.classTitle} className="w-5 h-5 shrink-0 text-text" />
+        <span className="text-text font-extralight whitespace-nowrap">{today}</span>
       </div>
 
-      <div className="topbar-xp-wrap">
-        <div className="topbar-xp-bar">
-          <div
-            className="topbar-xp-fill"
-            style={{ width: `${(currentInLevel / needed) * 100}%` }}
-          />
-        </div>
-        <span className="topbar-xp-text">
+      <div className="flex-1 max-w-[400px] mx-5 flex items-center justify-center gap-2.5">
+        <span className="text-text whitespace-nowrap">
           LVL {level} · {currentInLevel.toLocaleString()} / {needed.toLocaleString()} XP
         </span>
       </div>
 
-      <div className="topbar-right">
+      <div className="flex items-center gap-4">
         <button
           type="button"
-          className="topbar-shop-btn"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-surface border border-border rounded-md cursor-pointer text-text font-mono text-[13px] transition-colors duration-200 hover:bg-bg hover:border-text"
           onClick={onShowShop}
           title="Shop"
         >
-          <span className="topbar-shop-icon">🛒</span>
-          <span className="topbar-shop-text">Shop</span>
+          <span className="text-base leading-none">🛒</span>
+          <span className="whitespace-nowrap">Shop</span>
         </button>
         <button
           type="button"
-          className="flex items-center gap-1 px-3 py-1.5 bg-[#f0a500] text-white rounded-md font-mono text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+          className="flex items-center gap-1 px-3 py-1.5 bg-xp text-white rounded-md font-mono text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
           onClick={onShowLeaderboard}
         >
           🏆 Leaderboard
         </button>
-        <div style={{ position: 'relative' }} ref={dropdownRef}>
+        <div className="relative" ref={dropdownRef}>
           <button
             type="button"
-            className="topbar-settings"
+            className="bg-transparent border-none cursor-pointer p-1 text-muted text-lg leading-none hover:text-text"
             onClick={() => { setShowSettings(!showSettings); onToggleSettings(); }}
             aria-label="Settings"
           >
             ⚙
           </button>
           {showSettings && (
-            <div className="settings-dropdown">
+            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg p-2 min-w-[160px] shadow-lg z-50">
               {state.characterConfig && (
                 <button
                   type="button"
+                  className="block w-full py-2 px-3 text-left bg-transparent border-none rounded cursor-pointer font-sans text-[13px] text-text hover:bg-bg"
                   onClick={() => { onCustomize(); setShowSettings(false); }}
                 >
                   ✎ Customize Character
@@ -98,19 +93,21 @@ export function Topbar({
               )}
               <button
                 type="button"
+                className="block w-full py-2 px-3 text-left bg-transparent border-none rounded cursor-pointer font-sans text-[13px] text-text hover:bg-bg"
                 onClick={() => { onToggleTheme(); setShowSettings(false); }}
               >
                 {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
               </button>
               <button
                 type="button"
+                className="block w-full py-2 px-3 text-left bg-transparent border-none rounded cursor-pointer font-sans text-[13px] text-muted hover:bg-bg"
                 onClick={() => { if (window.confirm('Remove all active and completed quests?')) { onClearQuests(); setShowSettings(false); } }}
-                style={{ color: 'var(--muted)' }}
               >
                 Clear quests
               </button>
               <button
                 type="button"
+                className="block w-full py-2 px-3 text-left bg-transparent border-none rounded cursor-pointer font-sans text-[13px] text-text hover:bg-bg"
                 onClick={() => { onLogout(); setShowSettings(false); }}
               >
                 Log out

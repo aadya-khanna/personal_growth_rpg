@@ -1,13 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
 import type { AppState } from './types';
-import { getClassFlavor, getClassTitle, getEquipmentTier } from './utils';
+import { getClassTitle, getEquipmentTier } from './utils';
 import { xpToNextLevel } from './store';
-import type { StatId } from './types';
 import { buildSpriteLayers, getIdleFrameStyle } from './characterSprites';
 
 interface CharacterPanelProps {
   state: AppState;
-  onNameChange?: (name: string) => void;
 }
 
 const EQUIPMENT_NAMES = [
@@ -17,107 +14,66 @@ const EQUIPMENT_NAMES = [
   ['Pendant', 'Amulet', 'Focus Crystal', 'Arcane Orb'],
 ];
 
-export function CharacterPanel({ state, onNameChange }: CharacterPanelProps) {
-  const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(state.characterName);
-  const inputRef = useRef<HTMLInputElement>(null);
+export function CharacterPanel({ state }: CharacterPanelProps) {
   const tier = getEquipmentTier(state.level);
   const { level } = xpToNextLevel(state.totalXp);
   const classTitle = getClassTitle(state.stats);
-  const topStat = (['STRENGTH', 'INTELLECT', 'AGILITY', 'WISDOM'] as StatId[]).reduce((a, b) =>
-    state.stats[b] > state.stats[a] ? b : a
-  );
-  const flavor = getClassFlavor(topStat);
-
-  useEffect(() => {
-    setNameInput(state.characterName);
-  }, [state.characterName]);
-  useEffect(() => {
-    if (editingName) inputRef.current?.focus();
-  }, [editingName]);
-
-  const handleNameSubmit = () => {
-    if (onNameChange) {
-      const v = nameInput.trim() || 'Hero';
-      onNameChange(v);
-      setNameInput(v);
-    }
-    setEditingName(false);
-  };
 
   return (
-    <div className={`panel-character ${state.fainted ? 'fainted' : ''}`}>
+    <div
+      className={`w-[280px] shrink-0 bg-surface border-r border-border flex flex-col items-center p-4 animate-[fadeUp_0.5s_ease-out_0.16s_both] ${
+        state.fainted ? 'border-l-4 border-l-hp animate-[hpPulse_0.6s_ease]' : ''
+      }`}
+    >
       {state.characterConfig ? (
-        <div className="character-avatar character-avatar--user" aria-hidden>
-          <div className="character-avatar__user-layers">
+        <div className="w-[200px] h-40 my-0 mx-auto mb-3 relative flex items-center justify-center overflow-hidden" aria-hidden>
+          <div className="relative w-full h-full">
             {buildSpriteLayers(state.characterConfig).map((src, idx) => (
               <div
                 key={idx}
-                className="character-avatar__user-layer"
+                className="absolute left-0 top-0 w-full h-full bg-no-repeat bg-[position:0_0] pointer-events-none"
                 style={getIdleFrameStyle(src, 160)}
               />
             ))}
           </div>
         </div>
       ) : (
-        <div className="character-avatar character-avatar--placeholder" aria-hidden>
-          <span className="character-avatar__placeholder-text">?</span>
+        <div className="w-[120px] h-40 my-0 mx-auto mb-3 bg-bg border border-dashed border-border rounded-lg flex items-center justify-center" aria-hidden>
+          <span className="text-3xl text-muted font-semibold">?</span>
         </div>
       )}
-      <div className="hp-bar">
-        <div className="bar-wrap">
+      <div className="flex items-center gap-2 mb-2 font-mono text-xs w-full">
+        <div className="flex-1 h-2 bg-border rounded overflow-hidden">
           <div
-            className="bar-fill"
+            className="h-full bg-hp rounded transition-[width] duration-300 ease-out"
             style={{ width: `${Math.max(0, (state.hp / state.hpMax) * 100)}%` }}
           />
         </div>
         <span>{state.hp} / {state.hpMax} ❤️</span>
       </div>
-      <div className="mp-bar">
-        <div className="bar-wrap">
+      <div className="flex items-center gap-2 mb-2 font-mono text-xs w-full">
+        <div className="flex-1 h-2 bg-border rounded overflow-hidden">
           <div
-            className="bar-fill"
+            className="h-full bg-mp rounded transition-[width] duration-300 ease-out"
             style={{ width: `${Math.max(0, (state.mp / state.mpMax) * 100)}%` }}
           />
         </div>
         <span>{state.mp} / {state.mpMax} ✦</span>
       </div>
-      <div className="panel-character-info">
-        {onNameChange ? (
-          editingName ? (
-            <input
-              ref={inputRef}
-              className="panel-character-name-input"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onBlur={handleNameSubmit}
-              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
-            />
-          ) : (
-            <span
-              className="panel-character-name"
-              onClick={() => setEditingName(true)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && setEditingName(true)}
-            >
-              {state.characterName}
-            </span>
-          )
-        ) : (
-          <span className="panel-character-name">{state.characterName}</span>
-        )}
-        <span className="panel-character-class" title={classTitle}>{classTitle}</span>
-        <span className="panel-character-level">LVL {level}</span>
+      
+      <div className="w-full text-center mt-1 mb-2 pt-2 flex flex-col gap-0.5">
+        <span className="font-heading font-semibold text-[15px] text-text">{state.characterName}</span>
+        <span className="italic text-muted text-xs overflow-hidden text-ellipsis whitespace-nowrap" title={classTitle}>{classTitle}</span>
+        <span className="font-mono text-[11px] text-muted">LVL {level}</span>
       </div>
-      <div className="equipment-slots">
-        <span className="equipment-slots-label" title="Revealed by level: weapon, armor, helm, accessory">
+      <div className="grid grid-cols-4 gap-1.5 mt-3 w-full">
+        <span className="col-span-4 pt-10 text-[11px] text-muted text-center mb-0.5" title="Revealed by level: weapon, armor, helm, accessory">
           Equipment
         </span>
         {['weapon', 'armor', 'helm', 'accessory'].map((slot, i) => (
           <div
             key={slot}
-            className="eq-slot"
+            className={`aspect-square bg-bg border border-border rounded-md flex items-center justify-center cursor-default ${tier === 0 ? 'text-muted text-sm' : 'text-lg'}`}
             data-tooltip={EQUIPMENT_NAMES[i][tier]}
             title={EQUIPMENT_NAMES[i][tier]}
           >
@@ -125,7 +81,7 @@ export function CharacterPanel({ state, onNameChange }: CharacterPanelProps) {
           </div>
         ))}
       </div>
-      <p className="class-flavor">{flavor}</p>
+      
     </div>
   );
 }
