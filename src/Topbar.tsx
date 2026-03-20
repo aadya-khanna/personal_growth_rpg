@@ -42,13 +42,13 @@ export function Topbar({
   }, [showSettings]);
 
   return (
-    <header className="shrink-0 flex items-center justify-between py-2.5 px-4 bg-surface border-b border-border font-mono text-[13px] animate-[fadeUp_0.4s_ease-out]">
+    <header className="relative shrink-0 flex items-center justify-between py-2.5 px-4 bg-surface border-b border-border font-mono text-[13px] animate-[fadeUp_0.4s_ease-out]">
       <div className="flex items-center gap-2.5">
         <ClassIcon classTitle={state.characterConfig?.classTitle} className="w-5 h-5 shrink-0 text-text" />
         <span className="text-text font-extralight whitespace-nowrap">{today}</span>
       </div>
 
-      <div className="flex-1 max-w-[400px] mx-5 flex items-center justify-center gap-2.5">
+      <div className="absolute left-1/2 -translate-x-1/2">
         <span className="text-text whitespace-nowrap">
           LVL {level} · {currentInLevel.toLocaleString()} / {needed.toLocaleString()} XP
         </span>
